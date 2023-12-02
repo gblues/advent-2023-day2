@@ -5,9 +5,11 @@ fn main() {
     let mut total: i32 = 0;
     let line_parser = Regex::new(r"(?m)^Game (\d+):\s*(.*)\s*$").unwrap();
     let color_parser = Regex::new(r"^\s*(\d+)\s+(\w+)\s*$").unwrap();
-    for (_, [game_id_str, game_data]) in line_parser.captures_iter(input).map(|c| c.extract()) {
-        let game_id: i32 = game_id_str.parse().unwrap();
-        let mut is_possible: bool = true;
+    for (_, [_, game_data]) in line_parser.captures_iter(input).map(|c| c.extract()) {
+        let mut most_red: i32 = 0;
+        let mut most_green: i32 = 0;
+        let mut most_blue: i32 = 0;
+
         for pull in game_data.split(";") {
             for colorset in pull.split(",") {
                 let (_, [count_str, color]) = color_parser.captures(colorset).unwrap().extract::<2>();
@@ -15,21 +17,20 @@ fn main() {
 
                 match color {
                     "red" => {
-                        if count > 12 { is_possible = false; }
+                        most_red = if count > most_red {count} else {most_red};
                     },
                     "green" => {
-                        if count > 13 { is_possible = false; }
+                        most_green = if count > most_green {count} else {most_green};
                     },
                     "blue" => {
-                        if count > 14 { is_possible = false; }
+                        most_blue = if count > most_blue {count} else {most_blue};
                     },
                     _ => {}
                 }
             }
         }
-        if is_possible {
-            total += game_id;
-        }
+        let power: i32 = most_red * most_green * most_blue;
+        total += power;
     }
     println!("Total: {}", total);
 }
